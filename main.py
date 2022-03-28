@@ -3,6 +3,7 @@ import smtplib
 import ssl
 import re
 
+from time import sleep
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -78,14 +79,15 @@ def send_mail(mime, smtp_host, password, context):
 def main():
     header()
     st.markdown("### Лабораторная работа №5")
-    st.markdown("**Тема:** Реализация SMTP-клиента")
+    st.markdown("**Тема:** Реализация SMTP-клиента. Вариант I")
     st.markdown("SMTP-клиент реализован на базе сервера почтовых сообщений Yandex")
     st.markdown("---")
 
     with st.form("send_mail"):
-        c1, c2 = st.columns(2)
+        c1, c2, c3 = st.columns(3)
         email = c1.text_input("Введите email получателя:", value="if@kosarevsky.ru")
         subj = c2.text_input("Введите тему сообщения:", value="Привет")
+        interval = c3.number_input("Введите интервал (сек):", min_value=1, max_value=100, value=3)
         message = st.text_area(
             label="Введите сообщение:",
             value="Если проект не укладывается в сроки, то добавление рабочей силы задержит его еще больше."
@@ -95,13 +97,15 @@ def main():
         submitted = st.form_submit_button("Отправить сообщение")
         if submitted:
             if re.match(r"^[A-Za-z0-9\.\+_-]+@[A-Za-z0-9\._-]+\.[a-zA-Z]*$", email):
-                try:
-                    context = ssl.create_default_context()
-                    mime = fill_mail(FROM, email, subj, message, file=file if file else None)
-                    send_mail(mime, SMTP_HOST, PWD, context)
-                    st.code("Сообщение отправлено.")
-                except Exception as e:
-                    st.error(e)
+                while True:
+                    try:
+                        context = ssl.create_default_context()
+                        mime = fill_mail(FROM, email, subj, message, file=file if file else None)
+                        send_mail(mime, SMTP_HOST, PWD, context)
+                        st.code("Сообщение отправлено.")
+                    except Exception as e:
+                        st.error(e)
+                    sleep(interval)
             else:
                 st.error("Необходимо указать корректный email получателя.")
 
