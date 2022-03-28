@@ -33,6 +33,29 @@ def header():
     st.sidebar.markdown(author)
 
 
+def show_task():
+    st.markdown("""
+    Написать smtp-клиент, который
+
+        1) В качестве входных данных (аргументы командной строки) получает:
+        
+           адрес получателя, адрес отправителя, пароль.
+        
+        2) Использует один из открытых smtp-серверов для доставки MIME-сообщений, включая приложения, если они есть, в
+           соответствии с вариантом.
+        
+        Вариант = номер студента по списку в Электронном Университете % кол-во вариантов.
+        
+        3) Дополнительная задача зависит от варианта.
+        
+           I. Доставка сообщений выполняется с регулярным интервалом. Интервал и тело сообщения, имя файла для прикрепления (
+           опционально) вводятся с клавиатуры.
+           
+           II. В качестве дополнительного параметра задается ключевое слово. По данному ключевому слову выполняется поиск в
+       текстовых файлах в папке клиента, При обнаружении слова файл прикрепляется к письму.
+    """)
+
+
 def uploader(file):
     show_file = st.empty()
     if not file:
@@ -81,13 +104,26 @@ def main():
     st.markdown("### Лабораторная работа №5")
     st.markdown("**Тема:** Реализация SMTP-клиента. Вариант I")
     st.markdown("SMTP-клиент реализован на базе сервера почтовых сообщений Yandex")
+    if st.checkbox("Показать задание"):
+        show_task()
     st.markdown("---")
+
+    from_email = None
+    pwd = None
+    if st.checkbox("Использовать свой ящик на Яндекс для отправки сообщений"):
+        c4, c5 = st.columns(2)
+        from_email = c4.text_input("Введите email отправителя:", value="example@yandex.ru")
+        pwd = c5.text_input("Введите пароль:", type="password")
+
+    from_ = from_email if from_email else FROM
+    password_ = pwd if pwd else PWD
 
     with st.form("send_mail"):
         c1, c2, c3 = st.columns(3)
         email = c1.text_input("Введите email получателя:", value="if@kosarevsky.ru")
         subj = c2.text_input("Введите тему сообщения:", value="Привет")
         interval = c3.number_input("Введите интервал (сек):", min_value=1, max_value=100, value=3)
+
         message = st.text_area(
             label="Введите сообщение:",
             value="Если проект не укладывается в сроки, то добавление рабочей силы задержит его еще больше."
@@ -100,8 +136,8 @@ def main():
                 while True:
                     try:
                         context = ssl.create_default_context()
-                        mime = fill_mail(FROM, email, subj, message, file=file if file else None)
-                        send_mail(mime, SMTP_HOST, PWD, context)
+                        mime = fill_mail(from_, email, subj, message, file=file if file else None)
+                        send_mail(mime, SMTP_HOST, password_, context)
                         st.code("Сообщение отправлено.")
                     except Exception as e:
                         st.error(e)
