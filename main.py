@@ -122,7 +122,7 @@ def main():
         c1, c2, c3 = st.columns(3)
         email = c1.text_input("Введите email получателя:", value="if@kosarevsky.ru")
         subj = c2.text_input("Введите тему сообщения:", value="Привет")
-        interval = c3.number_input("Введите интервал (сек):", min_value=1, max_value=100, value=3)
+        interval = c3.number_input("Введите интервал (сек):", min_value=1, max_value=100, value=60)
 
         message = st.text_area(
             label="Введите сообщение:",
@@ -139,6 +139,7 @@ def main():
                         mime = fill_mail(from_, email, subj, message, file=file if file else None)
                         send_mail(mime, SMTP_HOST, password_, context)
                         st.code("Сообщение отправлено.")
+                        sleep(interval)
                     except Exception as e:
                         st.error(e)
                     sleep(interval)
